@@ -7,7 +7,6 @@
 # configuration example, you can run the command:
 # rnsd --exampleconfig
 
-
 [reticulum]
   
   # If you enable Transport, your system will route traffic
@@ -18,7 +17,6 @@
   # for brevity.
   
   enable_transport = Yes
-  
   
   # By default, the first program to launch the Reticulum
   # Network Stack will create a shared instance, that other
@@ -31,7 +29,6 @@
   
   share_instance = Yes
   
-  
   # If you want to run multiple *different* shared instances
   # on the same system, you will need to specify different
   # shared instance ports for each. The defaults are given
@@ -41,7 +38,6 @@
   shared_instance_port = 37428
   instance_control_port = 37429
   
-  
   # You can configure Reticulum to panic and forcibly close
   # if an unrecoverable interface error occurs, such as the
   # hardware device for an interface disappearing. This is
@@ -49,7 +45,6 @@
   # This behaviour is disabled by default.
   
   panic_on_interface_error = No
-
 
 [logging]
   # Valid log levels are 0 through 7:
@@ -63,7 +58,6 @@
   #   7: Extreme logging
   
   loglevel = 4
-
 
 # The interfaces section defines the physical and virtual
 # interfaces Reticulum will use to communicate on. This
@@ -95,7 +89,7 @@
     mode = gateway
     listen_on = 0.0.0.0
     port = 4242
-    
+
     # On publicly available interfaces, it can be
     # a good idea to configure sensible announce
     # rate targets.

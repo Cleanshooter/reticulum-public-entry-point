@@ -1,0 +1,6 @@
+# rns-page-node configuration template
+node-name=RNS-PEP-random
+pages-dir=./pages
+files-dir=./files
+identity-dir=./node-config
+announce-interval=360

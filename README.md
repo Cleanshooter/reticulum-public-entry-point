@@ -1,6 +1,6 @@
 # Reticulum GHCR image (reticulum-pep)
 
-This repository builds and publishes a Docker image containing the Reticulum `rns` package and utilities. The image is intended to be consumed from GHCR (GitHub Container Registry) so users can pull and run the daemon without building or running python locally.
+This repository builds and publishes a Docker image containing the Reticulum `rns` package, LXMF daemon, rns-page-node, and utilities. The image is intended to be consumed from GHCR (GitHub Container Registry) so users can pull and run the daemons without building or running python locally. All configuration and data is stored in a single directory (`/rns-pep`) for easier management and volume mounting.
 
 ## Published image
 
@@ -8,39 +8,42 @@ This repository builds and publishes a Docker image containing the Reticulum `rn
 
 ## Examples
 
-- Run the daemon with a named Docker volume (cross-platform, recommended):
+- Run the daemons with a named Docker volume (cross-platform, recommended):
 
 ```bash
-docker volume create reticulum-data
 docker run --rm -it \
-	-v reticulum-data:/home/rnsuser/.reticulum \
+	-v rns-pep:/rns-pep \
 	ghcr.io/cleanshooter/reticulum-pep:latest
 ```
 
 - Run with a host bind mount (Linux / WSL / macOS):
 
 ```bash
-mkdir -p ./reticulum-data
+mkdir -p ./rns-pep
 # ensure permissions for the container user if needed
 docker run --rm -it \
-	-v $(pwd)/reticulum-data:/home/rnsuser/.reticulum \
+	-v $(pwd)/rns-pep:/rns-pep \
 	ghcr.io/cleanshooter/reticulum-pep:latest
 ```
 
 - Run detached and view logs:
 
 ```bash
-docker run -d --name reticulum -v reticulum-data:/home/rnsuser/.reticulum ghcr.io/cleanshooter/reticulum-pep:latest
+docker run -d --name reticulum -v rns-pep:/rns-pep ghcr.io/cleanshooter/reticulum-pep:latest
 docker logs -f reticulum
 ```
 
-- Pass arguments to `rnsd` (ENTRYPOINT is `rnsd`):
+## Configuration
 
-```bash
-docker run --rm -it -v reticulum-data:/home/rnsuser/.reticulum ghcr.io/cleanshooter/reticulum-pep:latest --service
-```
+On first run, configuration files for Reticulum, LXMF, and rns-page-node are generated in `/rns-pep` from their respective templates:
 
-Docker Compose example
+- `/rns-pep/reticulum-config.template` → `/rns-pep/config`
+- `/rns-pep/lxmd-config.template` → `/rns-pep/lxmd/config` (with a random node name suffix)
+- `/rns-pep/rns-page-node-config.template` → `/rns-pep/rns-page-node.conf` (with the same random node name suffix)
+
+You can edit these files after the first run to customize your node.
+
+## Docker Compose example
 
 ```yaml
 version: '3.8'
@@ -48,11 +51,11 @@ services:
 	reticulum:
 		image: ghcr.io/cleanshooter/reticulum-pep:latest
 		volumes:
-			- reticulum-data:/home/rnsuser/.reticulum
+			- rns-pep:/rns-pep
 		restart: unless-stopped
 
 volumes:
-	reticulum-data:
+	rns-pep:
 ```
 
 ## Contributing
@@ -61,7 +64,9 @@ volumes:
 
 ## Support & Notes
 
-- The container runs `rnsd` as a non-root `rnsuser`. The entrypoint ensures the config directory is writable when using named volumes and common bind-mount workflows.
+- The container runs all daemons under Supervisor for process management.
+- All config and data is stored in `/rns-pep` for easy backup and migration.
+- On first run, config files are generated from templates and node names are randomized for LXMF and rns-page-node.
 - If you need local development with a source checkout, I can add a `Dockerfile.dev` that copies local source into the image for iterative testing.
 
 Questions or want me to add a `docker-compose.override.yml` example? Open a PR or tell me what example you prefer and I’ll add it.
