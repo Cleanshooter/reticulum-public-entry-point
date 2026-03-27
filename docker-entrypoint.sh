@@ -8,6 +8,12 @@ mkdir -p "$CONFIG_DIR"
 chown -R rnsuser:rnsuser "$CONFIG_DIR" || true
 
 # If first arg starts with '-', prepend rnsd
+# If no args provided, default to running rnsd (non-service mode).
+if [ "$#" -eq 0 ]; then
+  set -- rnsd
+fi
+
+# If first arg starts with '-', prepend rnsd
 if [ "${1#-}" != "$1" ]; then
   set -- rnsd "$@"
 fi
