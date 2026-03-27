@@ -1,0 +1,51 @@
+name: Build and publish Reticulum image
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest release tag from markqvist/Reticulum
+        id: get_release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              const resp = await github.rest.repos.getLatestRelease({ owner: 'markqvist', repo: 'Reticulum' });
+              return resp.data.tag_name || resp.data.name || 'master';
+            } catch (e) {
+              // fall back to master
+              return 'master';
+            }
+
+      - name: Export release tag
+        run: echo "RELEASE_TAG=${{ steps.get_release.outputs.result }}" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and push multi-platform image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/reticulum-pep:${{ env.RELEASE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/reticulum-pep:latest
+          build-args: |
+            RETICULUM_REF=${{ env.RELEASE_TAG }}
