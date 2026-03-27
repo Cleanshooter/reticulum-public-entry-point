@@ -38,7 +38,7 @@ WORKDIR /home/rnsuser
 # Persist Reticulum configuration
 VOLUME /home/rnsuser/.reticulum
 
-# Add entrypoint to fix permissions on mounted volume and drop to rnsuser
+COPY reticulum-config.template /home/rnsuser/reticulum-config.template
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
