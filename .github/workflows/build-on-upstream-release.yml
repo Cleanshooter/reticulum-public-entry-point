@@ -12,7 +12,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Get latest release tag from markqvist/Reticulum
         id: get_release
         uses: actions/github-script@v6
