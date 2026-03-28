@@ -34,16 +34,14 @@ COPY --from=build /opt/venv /opt/venv
 
 WORKDIR /rns-pep
 
-# Persist unified config/data directory
-VOLUME /rns-pep
-
 # Create config/data directory and copy templates
 RUN mkdir -p /rns-pep
 COPY reticulum-config.template /rns-pep/reticulum-config.template
 COPY lxmd-config.template /rns-pep/lxmd-config.template
 COPY rns-page-node-config.template /rns-pep/rns-page-node-config.template
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Install system dependencies for Reticulum, rns-page-node, and supervisor
 RUN apt-get update && \
@@ -60,8 +58,16 @@ RUN pip install --index-url https://git.quad4.io/api/packages/RNS-Things/pypi/si
 # TODO Verify ports: looks like AI halucination to me... 
 EXPOSE 4242 8080 8081
 
+# Copy default pages into the rns-pep directory
+COPY pages/ /rns-pep/pages/
+RUN chmod +x /rns-pep/pages/*.mu
+
 # Copy supervisor config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Declare volume last so all COPY/RUN writes above are captured in the image layer
+# and used to seed new named volumes on first run
+VOLUME /rns-pep
 
 # Use supervisord as entrypoint
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

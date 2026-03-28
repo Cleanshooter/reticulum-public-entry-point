@@ -1,10 +1,10 @@
-# Reticulum GHCR image (reticulum-pep)
+# Reticulum GHCR image (rns-pep)
 
 This repository builds and publishes a Docker image containing the Reticulum `rns` package, LXMF daemon, rns-page-node, and utilities. The image is intended to be consumed from GHCR (GitHub Container Registry) so users can pull and run the daemons without building or running python locally. All configuration and data is stored in a single directory (`/rns-pep`) for easier management and volume mounting.
 
 ## Published image
 
-- Image name: `ghcr.io/cleanshooter/reticulum-pep:<tag>` (also pushed as `:latest`)
+- Image name: `ghcr.io/cleanshooter/rns-pep:<tag>` (also pushed as `:latest`)
 
 ## Examples
 
@@ -13,7 +13,7 @@ This repository builds and publishes a Docker image containing the Reticulum `rn
 ```bash
 docker run --rm -it \
 	-v rns-pep:/rns-pep \
-	ghcr.io/cleanshooter/reticulum-pep:latest
+	ghcr.io/cleanshooter/rns-pep:latest
 ```
 
 - Run with a host bind mount (Linux / WSL / macOS):
@@ -23,13 +23,13 @@ mkdir -p ./rns-pep
 # ensure permissions for the container user if needed
 docker run --rm -it \
 	-v $(pwd)/rns-pep:/rns-pep \
-	ghcr.io/cleanshooter/reticulum-pep:latest
+	ghcr.io/cleanshooter/rns-pep:latest
 ```
 
 - Run detached and view logs:
 
 ```bash
-docker run -d --name reticulum -v rns-pep:/rns-pep ghcr.io/cleanshooter/reticulum-pep:latest
+docker run -d --name reticulum -v rns-pep:/rns-pep ghcr.io/cleanshooter/rns-pep:latest
 docker logs -f reticulum
 ```
 
@@ -43,13 +43,36 @@ On first run, configuration files for Reticulum, LXMF, and rns-page-node are gen
 
 You can edit these files after the first run to customize your node.
 
+### Environment variables
+
+| Variable       | Default                | Description                                                          |
+| -------------- | ---------------------- | -------------------------------------------------------------------- |
+| `PEP_TCP_HOST` | `YOUR.HOST.OR.IP.HERE` | Hostname or IP published on the index page for clients to copy-paste |
+| `PEP_TCP_PORT` | `4242`                 | TCP port published on the index page for clients to copy-paste       |
+
+These are read at page render time by `pages/index.mu`. They do not configure the actual network listener — the node runs a `BackboneInterface` (see `reticulum-config.template`), but advertises a `TCPClientInterface` block so clients can easily connect.
+
+Example:
+
+```bash
+docker run -d --name reticulum \
+  -e PEP_TCP_HOST=test.example.com \
+  -e PEP_TCP_PORT=4242 \
+  -v rns-pep:/rns-pep \
+  ghcr.io/cleanshooter/rns-pep:latest
+```
+
+### Default pages
+
+On first run, default pages are copied from the image into `/rns-pep/pages/` only if they don't already exist. This means you can safely customise pages in your volume without them being overwritten on container restart or image update.
+
 ## Docker Compose example
 
 ```yaml
 version: '3.8'
 services:
 	reticulum:
-		image: ghcr.io/cleanshooter/reticulum-pep:latest
+		image: ghcr.io/cleanshooter/rns-pep:latest
 		volumes:
 			- rns-pep:/rns-pep
 		restart: unless-stopped
