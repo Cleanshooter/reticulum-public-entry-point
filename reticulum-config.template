@@ -35,8 +35,8 @@
   # below, and again, these options can be left out if you
   # don't need them.
   
-  shared_instance_port = 37428
-  instance_control_port = 37429
+  shared_instance_port = 37430
+  instance_control_port = 37431
   
   # You can configure Reticulum to panic and forcibly close
   # if an unrecoverable interface error occurs, such as the
