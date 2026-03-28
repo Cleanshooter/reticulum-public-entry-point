@@ -1,6 +1,19 @@
-# Reticulum GHCR image (rns-pep)
+# RETICULUM NETWORK STACK - PUBLIC ENTRY POINT (RNS-PEP)
 
-This repository builds and publishes a Docker image containing the Reticulum `rns` package, LXMF daemon, rns-page-node, and utilities. The image is intended to be consumed from GHCR (GitHub Container Registry) so users can pull and run the daemons without building or running python locally. All configuration and data is stored in a single directory (`/rns-pep`) for easier management and volume mounting.
+This repository builds and publishes a Docker image containing the Reticulum `rns` package, LXMF daemon, rns-page-node, and utilities. The goal is to provide a pre-configured public entry point node that anyone can spin up without building projects, installing dependencies, or wrangling Python environments. All configuration and data is stored in a single directory (`/rns-pep`) for easy management and volume mounting.
+
+This type of node is best run on a always-on server where it can act as a Backbone, Transport, and Propagation Node. When a new version of RNS is released, this repo automatically builds and publishes a new image — so upgrading is as simple as `docker pull`.
+
+## Motivations
+
+Setting up this kind of node requires a lot of reading. I've been through the manual more times than I can count, and I don't think we should expect everyone to go through that. This is why we write code — to automate the hard parts so operators can focus on running their node, not configuring it. I'm still learning as I go, so please open an issue or idea on GitHub. I promise to read them.
+
+This is similar to the NomadNet image, with a few key differences:
+
+1. Different default settings tuned for public entry points
+2. A pre-built `index.mu` that displays live server health — big thanks to noDNS for sharing their work
+3. *(Planned)* Interface list automatically populated instead of requiring manual setup
+4. *(Planned)* Blackhole list source included in the base config — still working out the details
 
 ## Published image
 
@@ -73,6 +86,9 @@ version: '3.8'
 services:
 	reticulum:
 		image: ghcr.io/cleanshooter/rns-pep:latest
+		environment:
+			- PEP_TCP_HOST=your.host.or.ip.here
+			- PEP_TCP_PORT=4242
 		volumes:
 			- rns-pep:/rns-pep
 		restart: unless-stopped
@@ -96,7 +112,7 @@ Questions or want me to add a `docker-compose.override.yml` example? Open a PR o
 
 ## Next Steps
 
-1. Pre-configure the node for transport and add a backbone gateway interface. Provide a guide and example for deploying this via Docker or Kubernetes on most servers.
+1. ~~Pre-configure the node for transport and add a backbone gateway interface. Provide a guide and example for deploying this via Docker or Kubernetes on most servers.~~
 2. Automate the addition of interfaces to other online backbone nodes, as listed on https://directory.rns.recipes/. Ensure the process preserves any custom interfaces while dynamically adding trustworthy ones, and reboot the node to use the new interfaces.
 3. Develop a trustworthy node profile:
    - Determine if a node is running a current version of Reticulum.
